@@ -41,7 +41,7 @@ if (deployment is not { Length: > 0 } || embeddingDeployment is not { Length: > 
     Environment.Exit(1);
 }
 
-var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:6379").GetDatabase());
+var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:16379").GetDatabase());
 var collection = vectorStore.GetCollection<string, Ship>("pirate-ships");
 
 // Create a kernel builder
@@ -104,9 +104,9 @@ var history = new ChatHistory(
     Use the actual name of the ship in your response.
 
     When the conversation implies that a fight has occurred, use the "Fight" function provided to you,
-    using the ship type as parameter. The Fight function will return 0 (defeat) or 1 (victory).
+    using the ship type as parameter and respond. The Fight function will return 0 (defeat) or 1 (victory).
 
-    When being asked to describe one of the ship types above, use the "Describe" function provided to you.
+    When being asked to describe one of the ship types above, use the "Describe" function provided to you and respond.
     Do not use any other information you may have on these ships.
     """);
 

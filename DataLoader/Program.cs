@@ -31,7 +31,7 @@ if (deployment is not { Length: > 0 } || endpoint is not { Length: > 0 } || key 
 
 // Create our vector store collection
 Console.WriteLine("Connecting to vector store and creating collection...");
-var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:6379").GetDatabase());
+var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:16379").GetDatabase());
 var shipData = ShipData.GetShips();
 var shipCollection = vectorStore.GetCollection<string, Ship>("pirate-ships");
 await shipCollection.CreateCollectionIfNotExistsAsync();
