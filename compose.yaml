@@ -1,0 +1,25 @@
+services:
+#  quadrant:
+#    image: qdrant/qdrant
+#    ports:
+#      - "6333:6333"
+#      - "6334:6334"
+#    volumes:
+#      - ./qdrant_storage:/qdrant/storage:z 
+
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-vector-db:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "-p", "6379", "ping" ]
+      interval: 2s
+      timeout: 1m30s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  redis-vector-db:

@@ -1,0 +1,16 @@
+name: Fight
+template: |
+  Based on the {{$input}}, respond with either "0" or "1" to determine the outcome of a naval battle.
+  If the input includes the words "galleon" or "frigate", return "0". Otherwise, return "1". 
+  Return no other results.
+template_format: semantic-kernel
+description: Determines the outcome of a fight between my ship and another ship in the age of pirates
+input_variables:
+  - name: input
+    description: The type of the other ship
+    is_required: true
+output_variable:
+  description: The outcome of the naval battle
+execution_settings:
+  default:
+    temperature: 1.2
