@@ -41,39 +41,48 @@ if (deployment is not { Length: > 0 } || embeddingDeployment is not { Length: > 
     Environment.Exit(1);
 }
 
+# region D- VectorStore Demo 1
 var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:16379").GetDatabase());
 var collection = vectorStore.GetCollection<string, Ship>("pirate-ships");
+#endregion
 
 // Create a kernel builder
 var builder = Kernel.CreateBuilder();
+
 // Add the Azure OpenAI chat completion service
 builder.AddAzureOpenAIChatCompletion(deployment, endpoint, key);
-builder.AddAzureOpenAITextEmbeddingGeneration(embeddingDeployment, endpoint, key);
 
+#region A - OllamaChatCompletion 1
 // builder.AddOllamaChatCompletion(modelId: "llama3.2", endpoint: new Uri("http://localhost:11434"));
+#endregion
+
+# region D - VectorStore Demo 2
+// Add the Azure OpenAI text embedding generation service
+builder.AddAzureOpenAITextEmbeddingGeneration(embeddingDeployment, endpoint, key);
+#endregion
 
 // Add logging to check token usage etc.
 builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-
+# region B - RandomEncounters
 // Add the RandomEncouters plugin
 builder.Plugins.AddFromType<RandomEncounters>();
+#endregion
 
+# region C - HostileEncounters
 // Add the Fight plugin
 var pluginDirectory = Path.Combine(Directory.GetCurrentDirectory(), "plugins");
 builder.Plugins.AddFromPromptDirectory(pluginDirectory);
+#endregion
 
 // Create the kernel
 var kernel = builder.Build();
 
+# region D - VectorStore Demo 3
 var embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(
     new ShipSearch(collection, embeddingGenerationService)));
-
-// var yaml = File.ReadAllText("fight.yaml");
-// var fightFunction = kernel.CreateFunctionFromPromptYaml(yaml);
-// var fightPlugin = KernelPluginFactory.CreateFromFunctions("Fight", [fightFunction]);
-// kernel.Plugins.Add(fightPlugin);
+#endregion
 
 // Look up the chat completion service
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
@@ -82,11 +91,14 @@ var executionSettings = new AzureOpenAIPromptExecutionSettings
     Temperature = 1.2,
     FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 };
+
+#region A - OllamaChatCompletion 2
 // var executionSettings = new OllamaPromptExecutionSettings
 // {
 //     Temperature = 1.2f,
 //     FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 // };
+#endregion
 
 // Create a chat history including a system prompt
 var history = new ChatHistory(
@@ -102,10 +114,8 @@ var history = new ChatHistory(
     4: an English pinnace
     5: an English merchantman
     Use the actual name of the ship in your response.
-
-    When the conversation implies that a fight has occurred, use the "Fight" function provided to you,
+    When you are instructed to attack or fight, use the "Fight" function provided to you,
     using the ship type as parameter and respond. The Fight function will return 0 (defeat) or 1 (victory).
-
     When being asked to describe one of the ship types above, use the "Describe" function provided to you and respond.
     Do not use any other information you may have on these ships.
     """);
