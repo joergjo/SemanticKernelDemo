@@ -41,7 +41,7 @@ if (deployment is not { Length: > 0 } || embeddingDeployment is not { Length: > 
     Environment.Exit(1);
 }
 
-# region D- VectorStore Demo 1
+# region D - VectorStore Demo 1
 var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:16379").GetDatabase());
 var collection = vectorStore.GetCollection<string, Ship>("pirate-ships");
 #endregion
@@ -104,6 +104,7 @@ var executionSettings = new AzureOpenAIPromptExecutionSettings
 var history = new ChatHistory(
     """
     From now on, you will talk like a pirate! Please respond to every message in pirate speech.
+
     Whenever the conversation explicitly says that a ship has been sighted, generate a random ship type 
     using the "Generate" function provided to you. The Generate function will return numbers between 0 and 5.
     These map to the following ship types:
@@ -114,8 +115,10 @@ var history = new ChatHistory(
     4: an English pinnace
     5: an English merchantman
     Use the actual name of the ship in your response.
+
     When you are instructed to attack or fight, use the "Fight" function provided to you,
     using the ship type as parameter and respond. The Fight function will return 0 (defeat) or 1 (victory).
+
     When being asked to describe one of the ship types above, use the "Describe" function provided to you and respond.
     Do not use any other information you may have on these ships.
     """);
