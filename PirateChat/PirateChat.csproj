@@ -11,10 +11,10 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
-      <PackageReference Include="Microsoft.SemanticKernel" Version="1.41.0" />
-      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.42.0-alpha" />
-      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.42.0-preview" />
-      <PackageReference Include="Microsoft.SemanticKernel.Yaml" Version="1.42.0" />
+      <PackageReference Include="Microsoft.SemanticKernel" Version="1.45.0" />
+      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.45.0-alpha" />
+      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.45.0-preview" />
+      <PackageReference Include="Microsoft.SemanticKernel.Yaml" Version="1.45.0" />
     </ItemGroup>
 
 </Project>
