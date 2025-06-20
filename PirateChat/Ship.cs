@@ -1,44 +1,38 @@
 using System.ComponentModel;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
-#pragma warning disable SKEXP0001
 
 namespace PirateChat;
 
 public class Ship
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public required string Id { get; set; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string? ShipType { get; set; }
     
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public string? Description { get; set; }
     
-    [VectorStoreRecordVector(1536)]
-    public ReadOnlyMemory<float> Vector { get; set; }
+    [VectorStoreVector(1536)]
+    public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 }
 
 public class ShipSearch(
-    IVectorStoreRecordCollection<string, Ship> collection, 
-    ITextEmbeddingGenerationService embeddingGenerationService)
+    VectorStoreCollection<string, Ship> collection, 
+    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
 {
     [KernelFunction]
     [Description("Describe a ship based on a query.")]
     public async Task<string> SearchAsync(string query)
     {
-        var queryEmbedding = await embeddingGenerationService.GenerateEmbeddingAsync(query);
-        var searchOptions = new VectorSearchOptions<Ship>
-        {
-            Top = 1,
-            VectorProperty = s => s.Vector,
-        };
+        var queryEmbedding = (await embeddingGenerator.GenerateAsync(query)).Vector;
 
-        var results = await collection.VectorizedSearchAsync(queryEmbedding, searchOptions);
+        var results = collection.SearchAsync(queryEmbedding, top: 1);
         var completion = string.Empty;
-        await foreach (var result in results.Results)
+        await foreach (var result in results)
         {
             completion = result.Record.Description!;
             break;

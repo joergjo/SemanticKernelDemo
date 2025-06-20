@@ -4,17 +4,17 @@ namespace DataLoader;
 
 public class Ship
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public required string Id { get; set; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
-    public string? ShipType { get; set; }
+    [VectorStoreData(IsIndexed = true)]
+    public string ShipType { get; set; } = string.Empty;
     
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
-    public string? Description { get; set; }
+    [VectorStoreData(IsFullTextIndexed = true)]
+    public string Description { get; set; } = string.Empty;
     
-    [VectorStoreRecordVector(1536)]
-    public ReadOnlyMemory<float> Vector { get; set; }
+    [VectorStoreVector(1536)]
+    public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 }
 
 public static class ShipData

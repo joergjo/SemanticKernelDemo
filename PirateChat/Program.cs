@@ -4,17 +4,14 @@
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0070
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
-using OllamaSharp;
 using PirateChat;
 using StackExchange.Redis;
 
@@ -58,11 +55,11 @@ builder.AddAzureOpenAIChatCompletion(deployment, endpoint, key);
 
 # region D - VectorStore Demo 2
 // Add the Azure OpenAI text embedding generation service
-builder.AddAzureOpenAITextEmbeddingGeneration(embeddingDeployment, endpoint, key);
+builder.AddAzureOpenAIEmbeddingGenerator(embeddingDeployment, endpoint, key);
 #endregion
 
 // Add logging to check token usage etc.
-builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
+builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 # region B - RandomEncounters
 // Add the RandomEncouters plugin
@@ -79,7 +76,7 @@ builder.Plugins.AddFromPromptDirectory(pluginDirectory);
 var kernel = builder.Build();
 
 # region D - VectorStore Demo 3
-var embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+var embeddingGenerationService = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(
     new ShipSearch(collection, embeddingGenerationService)));
 #endregion
@@ -116,7 +113,7 @@ var history = new ChatHistory(
     5: an English merchantman
     Use the actual name of the ship in your response.
 
-    When you are instructed to attack or fight, use the "Fight" function provided to you,
+    When you are instructed to engage the ship, use the "Fight" function provided to you,
     using the ship type as parameter and respond. The Fight function will return 0 (defeat) or 1 (victory).
 
     When being asked to describe one of the ship types above, use the "Describe" function provided to you and respond.

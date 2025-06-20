@@ -3,11 +3,10 @@
 #pragma warning disable SKEXP0010
 
 using DataLoader;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
 
 var configuration = new ConfigurationBuilder()
@@ -32,37 +31,38 @@ if (deployment is not { Length: > 0 } || endpoint is not { Length: > 0 } || key 
 // Create our vector store collection
 Console.WriteLine("Connecting to vector store and creating collection...");
 var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:16379").GetDatabase());
-var shipData = ShipData.GetShips();
 var shipCollection = vectorStore.GetCollection<string, Ship>("pirate-ships");
-await shipCollection.CreateCollectionIfNotExistsAsync();
+await shipCollection.EnsureCollectionExistsAsync();
+
+var shipData = ShipData.GetShips();
+
+// Build the kernel
+var kernel = Kernel.CreateBuilder()
+    .AddAzureOpenAIEmbeddingGenerator(deployment, endpoint, key)
+    .Build();
+var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
 // Generate embeddings for each ship
 Console.WriteLine("Generating embeddings...");
-var embeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(deployment, endpoint, key);
+var tasks = shipData.Select(entry => Task.Run(async () =>
+       {
+           entry.DescriptionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Description)).Vector;
+       }));
+await Task.WhenAll(tasks);
 
-foreach (var ship in shipData.Where(ship => ship.Description is { Length: > 0 }))
-{
-    ship.Vector = await embeddingGenerationService.GenerateEmbeddingAsync(ship.Description!);
-    await shipCollection.UpsertAsync(ship);
-}
+// Upsert the ships into the vector store
+await shipCollection.UpsertAsync(shipData);
 
 // Test our vectorized search
 Console.WriteLine("Running test query...");
 
 // Vectorize our query
 const string query = "A heavily armend ship.";
-var queryEmbedding = await embeddingGenerationService.GenerateEmbeddingAsync(query);
-
-var searchOptions = new VectorSearchOptions<Ship>
-{
-    Top = 2,
-    VectorProperty = s => s.Vector,
-    
-};
+var queryEmbedding = (await embeddingGenerator.GenerateAsync(query)).Vector;
 
 // Query vector store for similar ships
-var results = await shipCollection.VectorizedSearchAsync(queryEmbedding, searchOptions);
-await foreach (var result in results.Results)
+var results = shipCollection.SearchAsync(queryEmbedding, 2);
+await foreach (var result in results)
 {
     Console.WriteLine($"Type: {result.Record.ShipType}");
     Console.WriteLine($"Description: {result.Record.Description}");
