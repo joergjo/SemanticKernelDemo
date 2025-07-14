@@ -12,8 +12,8 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
       <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.6.0" />
-      <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.57.0" />
-      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.57.0-preview" />
+      <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.60.0" />
+      <PackageReference Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.60.0-preview" />
     </ItemGroup>
 
 </Project>
